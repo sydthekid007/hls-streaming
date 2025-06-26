@@ -3,6 +3,7 @@
 <head>
   <title>Session 9 Streaming</title>
   <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
   <video
@@ -12,7 +13,6 @@
     preload="auto"
     width="640"
     height="360"
-    data-setup="{}"
   ></video>
 
   <script src="https://unpkg.com/video.js/dist/video.min.js"></script>
@@ -34,10 +34,23 @@
     }
 
     const player = videojs('my-video');
+
     player.ready(async function () {
       const url = await generateSignedUrl('session9.m3u8');
-      player.src({ src: url, type: 'application/x-mpegURL' });
-      player.play().catch(err => console.warn("Autoplay failed:", err));
+
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(player.tech_.el_);
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          player.play().catch(e => console.warn("Autoplay failed:", e));
+        });
+      } else if (player.tech_.el_.canPlayType('application/vnd.apple.mpegurl')) {
+        player.src({ src: url, type: 'application/x-mpegURL' });
+        player.play().catch(e => console.warn("Autoplay failed:", e));
+      } else {
+        console.error('This browser does not support HLS.');
+      }
     });
   </script>
 </body>
