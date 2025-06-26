@@ -14,9 +14,33 @@
       height="360"
       data-setup='{}'
     >
-      <source src="https://my-movie-worker-production.napatsuksin.workers.dev/session9.m3u8" type="application/x-mpegURL" />
+      <!-- แหล่งที่มา .m3u8 จะถูกใส่ผ่าน JS -->
     </video>
 
     <script src="https://unpkg.com/video.js/dist/video.js"></script>
+    <script>
+      async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      async function generateSignedUrl(filename) {
+        const secret = "your-secret-token"; // ต้องเหมือนใน worker
+        const exp = Math.floor(Date.now() / 1000) + 600; // หมดอายุใน 10 นาที
+        const token = await sha256(filename + exp + secret);
+        const baseUrl = "https://my-movie-worker-production.napatsuksin.workers.dev";
+        return `${baseUrl}/${filename}?token=${token}&exp=${exp}`;
+      }
+
+      (async () => {
+        const url = await generateSignedUrl('session9.m3u8');
+
+        const player = videojs('my-video');
+        player.src({ src: url, type: 'application/x-mpegURL' });
+        player.play();
+      })();
+    </script>
   </body>
 </html>
