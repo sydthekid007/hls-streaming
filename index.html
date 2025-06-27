@@ -10,7 +10,7 @@
     const secret = "your-secret-token";
     const exp = Math.floor(Date.now() / 1000) + 600;
     const token = await sha256(filename + exp + secret);
-    const baseUrl = "https://my-movie-worker-production.napatsuksin.workers.dev";
+    const baseUrl = "https://my-movie-worker-production.jimmykors871.workers.dev/";
     return `${baseUrl}/${filename}?token=${token}&exp=${exp}`;
   }
 
