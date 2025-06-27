@@ -7,7 +7,7 @@
   }
 
   async function generateSignedUrl(filename) {
-    const secret = "your-secret-token";
+    const secret = "MY_SECRET_TOKEN";
     const exp = Math.floor(Date.now() / 1000) + 600;
     const token = await sha256(filename + exp + secret);
     const baseUrl = "https://my-movie-worker-production.jimmykors871.workers.dev/";
